@@ -1,3 +1,4 @@
+
 name: Snyk SCA Security Scan
 
 on:
@@ -6,7 +7,8 @@ on:
       - master
       - 'remediation/**'
   pull_request:
-    branches: [master]
+    branches:
+      - master
 
 permissions:
   contents: read
@@ -20,9 +22,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install root dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install --legacy-peer-deps --ignore-scripts
+
       - name: Run Snyk Security Scan
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --all-projects --severity-threshold=high
+
